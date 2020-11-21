@@ -8,21 +8,21 @@ import (
 
 var poolN uint32 = 0x10101010
 
-type gpool struct {
+type poolGroup struct {
 	opt *Options
 
 	w []WaiterHandler
 }
 
-func New(opt *Options) Pool {
+func New(opt *Options) PoolGroup {
 	opt.setDefault()
 
-	return &gpool{opt: opt}
+	return &poolGroup{opt: opt}
 }
 
-func (p *gpool) addWaiter(w WaiterHandler) { p.w = append(p.w, w) }
+func (p *poolGroup) addWaiter(w WaiterHandler) { p.w = append(p.w, w) }
 
-func (p *gpool) Call(ctx context.Context, fn func(context.Context), size ...int) PoolFunc {
+func (p *poolGroup) Call(ctx context.Context, fn func(context.Context), size ...int) PoolFunc {
 	var siz int
 
 	if len(size) > 0 && size[0] > 0 {
@@ -35,27 +35,27 @@ func (p *gpool) Call(ctx context.Context, fn func(context.Context), size ...int)
 	p.addWaiter(b)
 
 	if !p.opt.HideUniqueIdentify {
-		b.log = b.log.WithField("goroutine", getPoolCount())
+		b.log = b.log.WithField("pool_id", getPoolCount())
 	}
 
 	return b.thread()
 }
 
-func (p *gpool) CallArg(ctx context.Context, fn func(context.Context, interface{}), size ...int) PoolArg {
+func (p *poolGroup) CallArg(ctx context.Context, fn func(context.Context, interface{}), size ...int) PoolArg {
 	return nil
 }
 
-func (p *gpool) CallArgResult(ctx context.Context, fn func(context.Context, interface{}) interface{}, size ...int) PoolArg {
+func (p *poolGroup) CallArgResult(ctx context.Context, fn func(context.Context, interface{}) interface{}, size ...int) PoolArg {
 	return nil
 }
 
-func (p *gpool) Stop() {
+func (p *poolGroup) Stop() {
 	for _, w := range p.w {
 		w.Stop()
 	}
 }
 
-func (p *gpool) Wait() {
+func (p *poolGroup) Wait() {
 	for _, w := range p.w {
 		w.Wait()
 	}

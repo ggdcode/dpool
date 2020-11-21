@@ -22,8 +22,8 @@ type LoggerHandler interface {
 	GetLogger() glog.Logger
 }
 
-// Pool 协程池接口
-type Pool interface {
+// PoolGroup 协程池接口
+type PoolGroup interface {
 	WaiterHandler
 
 	Call(context.Context, func(context.Context), ...int) PoolFunc
