@@ -19,19 +19,19 @@ func newPool(ctx context.Context, opt *Options, size int, fn ExecFunc) *pool {
 
 func (p *pool) thread() *pool {
 	if p.IsRunning() {
-		p.log.Warn("the goroutine pool was run!")
+		p.log.Warn("WAS_RUN")
 		return p
 	}
 
 	p.wg.Add(p.size)
-	p.log.Debug("the goroutine pool is running!")
+	p.log.Debug("IS_RUNNING")
 
 	for i := 0; i < p.size; i++ {
 		i := i
 		go func() {
 			p.fn(p.ctx)
+			p.log.WithField("index", i).Debug("WAS_STOPPED")
 			p.wg.Done()
-			p.log.WithField("index", i).Debug("the goroutine was stopped")
 		}()
 	}
 

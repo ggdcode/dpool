@@ -2,6 +2,7 @@ package gpool
 
 import (
 	"context"
+	"math/rand"
 	"sync"
 	"sync/atomic"
 )
@@ -18,23 +19,11 @@ type base struct {
 	wg sync.WaitGroup
 
 	log Logger
-
-	ft  fnType
-	fn1 ExecArg
-	fn2 ExecArgResult
 }
-
-type fnType int8
-
-const (
-	_ = iota
-	fnTypeFunc
-	fnTypeArg
-	fnTypeArgResult
-)
 
 func newBase(ctx context.Context, opt *Options, size int) *base {
 	c, cancel := context.WithCancel(ctx)
+	addPoolN()
 
 	return &base{
 		ctx:    c,
@@ -45,9 +34,25 @@ func newBase(ctx context.Context, opt *Options, size int) *base {
 	}
 }
 
-func (b *base) Stop() { b.cancel() }
-func (b *base) Wait() { b.wg.Wait() }
+func (b *base) Options() *Options { return b.opt }
+func (b *base) Stop()             { b.cancel() }
+func (b *base) Wait() {
+	b.wg.Wait()
+	b.log.Debug("POOL_ENDED")
+}
+func (b *base) WgAdd(n int) { b.wg.Add(n) }
+func (b *base) WgDone()     { b.wg.Done() }
 
 func (b *base) IsRunning() bool {
 	return !atomic.CompareAndSwapInt32(&b.running, 0, 1)
+}
+
+var poolN uint32 = 0x10101010
+
+func addPoolN() {
+	atomic.AddUint32(&poolN, (1+uint32(rand.Int31()))%100)
+}
+
+func getPoolN() uint32 {
+	return atomic.LoadUint32(&poolN)
 }

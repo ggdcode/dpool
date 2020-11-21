@@ -32,21 +32,26 @@ type PoolGroup interface {
 
 	CallArgResult(context.Context, func(context.Context, interface{}) interface{}, ...int) PoolArg
 }
+type Pool interface {
+	Options() *Options
+
+	WgAdd(n int)
+	WgDone()
+
+	WaiterHandler
+	LoggerHandler
+}
 
 type PoolFunc interface {
-	WaiterHandler
-
-	LoggerHandler
+	Pool
 }
 
 type PoolArg interface {
-	WaiterHandler
+	Pool
 
-	LoggerHandler
+	Submit(param interface{}) error
 }
 
 type PoolArgResult interface {
-	WaiterHandler
-
-	LoggerHandler
+	Pool
 }
