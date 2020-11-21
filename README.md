@@ -1,2 +1,7 @@
 # dpool
-协程池
+
+## install
+
+```
+go get github.com/ggdcode/gpool
+```
